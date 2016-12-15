@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">FracLand</string>
+    <string name="action_help">Help</string>
+    <string name="help">Veeg heen en weer om te draaien[BR][BR]Veeg
+    op en neer om te kantelen</string>
+    <string name="OK">OK</string>
+</resources>
