@@ -2,6 +2,7 @@ package nl.xs4all.pebbe.globe;
 
 import com.mhuss.AstroLib.DateOps;
 import com.mhuss.AstroLib.Latitude;
+import com.mhuss.AstroLib.LocationElements;
 import com.mhuss.AstroLib.Longitude;
 import com.mhuss.AstroLib.ObsInfo;
 import com.mhuss.AstroLib.PlanetData;
@@ -30,6 +31,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
     private final static String angelHState = "nl.xs4all.pebbe.globe.ANGLEH";
     private final static String angelVState = "nl.xs4all.pebbe.globe.ANGLEV";
+    private final static String angelSState = "nl.xs4all.pebbe.globe.ANGLESAVED";
 
     private Globe globe;
     private Context mContext;
@@ -41,10 +43,12 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
     private float mAngleH;
     private float mAngleV;
+    private boolean mAngleSaved;
 
     private void init() {
         mAngleH = 0;
         mAngleV = 0;
+        mAngleSaved = false;
     }
 
     public void setContext(Context context) {
@@ -56,12 +60,14 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         if (savedInstanceState != null) {
             mAngleH = savedInstanceState.getFloat(angelHState, mAngleH);
             mAngleV = savedInstanceState.getFloat(angelVState, mAngleV);
+            mAngleSaved = savedInstanceState.getBoolean(angelSState, false);
         }
     }
 
     public void saveInstanceState(Bundle outState) {
         outState.putFloat(angelHState, mAngleH);
         outState.putFloat(angelVState, mAngleV);
+        outState.putBoolean(angelSState, true);
     }
 
     @Override
@@ -84,19 +90,23 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         Date trialTime = new Date();
         cal.setTime(trialTime);
 
-        PlanetData pd = new PlanetData();
-        ObsInfo oi = new ObsInfo(new Latitude(0), new Longitude(0));
+        ObsInfo oi = new ObsInfo(new Latitude(0), new Longitude(0), 0);
         double jd = DateOps.calendarToDoubleDay(cal);
-        pd.calc(Planets.SUN, jd, oi);
+        PlanetData pd = new PlanetData(Planets.SUN, jd, oi);
+        LocationElements le;
         try {
-            longitude = (float) (180 * pd.getRightAscension() / PI);
-            latitude = (float) (180 * pd.getDeclination() / PI);
+            longitude = (float) -pd.hourAngle();
+            latitude = (float) pd.getDeclination();
         } catch (Exception e) {
             Log.i("MYTAG", e.toString());
         }
-
         globe = new Globe(mContext);
         globe.Sun(longitude, latitude);
+
+        if (!mAngleSaved) {
+            mAngleH = 180.0f * longitude / (float) PI;
+            mAngleV = 180.0f * latitude / (float) PI;
+        }
     }
 
     @Override
@@ -107,8 +117,8 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
         // Set the camera position (View matrix)
 
-        float h = mAngleH / 180 * (float) PI;
-        float v = mAngleV / 180 * (float) PI;
+        float h = mAngleH / 180.0f * (float) PI;
+        float v = mAngleV / 180.0f * (float) PI;
 
         Matrix.setLookAtM(mViewMatrix, 0,
                 100 * (float) (sin(h) * cos(v)), 100 * (float) sin(v), 100 * (float) (cos(h) * cos(v)),

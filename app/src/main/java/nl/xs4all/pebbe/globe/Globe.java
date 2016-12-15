@@ -75,16 +75,9 @@ public class Globe {
     }
 
     public void Sun(float lon, float lat) {
-        double x, y, z;
-        lon = lon / 180.0f * (float) PI;
-        lat = lat / 180.0f * (float) PI;
-        x = Math.sin(lon) * Math.cos(lat);
-        y = Math.sin(lat);
-        z = Math.cos(lon) * Math.cos(lat);
-        float r = (float) Math.sqrt(x*x+y*y+z*z);
-        sunX = (float) x / r;
-        sunY = (float) y / r;
-        sunZ = (float) z / r;
+        sunX = (float) (Math.sin(lon) * Math.cos(lat));
+        sunY = (float) Math.sin(lat);
+        sunZ = (float) (Math.cos(lon) * Math.cos(lat));
     }
 
     public Globe(Context context) {

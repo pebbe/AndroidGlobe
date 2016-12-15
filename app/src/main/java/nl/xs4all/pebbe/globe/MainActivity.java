@@ -26,6 +26,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mGLView.saveInstanceState(outState);
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         // The following call pauses the rendering thread.
