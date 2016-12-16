@@ -33,30 +33,24 @@ public class Globe {
             "attribute vec2 position;" +
             "varying vec2 pos;" +
             "uniform vec3 sun;" +
-            "varying float x;" +
-            "varying float y;" +
-            "varying float z;" +
-            "varying float c;" +
+            "varying vec3 vsun;" +
             "void main() {" +
-            "    x = sin(position[0]) * cos(position[1]);" +
-            "    y = sin(position[1]);" +
-            "    z = cos(position[0]) * cos(position[1]);" +
-            "    c = 4.0 * (x * sun[0] + y * sun[1] + z * sun[2]);" +
-            "    if (c > 1.0) c = 1.0;" +
-            "    if (c < -1.0) c = -1.0;" +
-            "    c = c * 0.5 + 0.5;" +
-            "    c = c * 0.8 + 0.2;" +
-            "    gl_Position = uMVPMatrix * vec4(x, y, z, 1);" +
-            "    pos = vec2(position[0] / 3.14159265 / 2.0 + 0.5, - position[1] / 1.5707963 / 2.0 - 0.5);" +
+            "    gl_Position = uMVPMatrix * vec4(sin(position[0]) * cos(position[1]), sin(position[1]), cos(position[0]) * cos(position[1]), 1);" +
+            "    pos = position;" +
+            "    vsun = sun;" +
             "}";
 
     private final String fragmentShaderCode = "" +
             "precision mediump float;" +
             "uniform sampler2D texture;" +
             "varying vec2 pos;" +
-            "varying float c;" +
+            "varying vec3 vsun;" +
             "void main() {" +
-            "    gl_FragColor = c * texture2D(texture, pos);" +
+            "    if (sin(pos[0]) * cos(pos[1]) * vsun[0] + sin(pos[1]) * vsun[1] + cos(pos[0]) * cos(pos[1]) * vsun[2] > 0.0) {" +
+            "        gl_FragColor = texture2D(texture, vec2(pos[0] / 3.14159265 / 2.0 + 0.5, - pos[1] / 1.5707963 / 2.0 - 0.5));" +
+            "    } else {" +
+            "        gl_FragColor = 0.6 * texture2D(texture, vec2(pos[0] / 3.14159265 / 2.0 + 0.5, - pos[1] / 1.5707963 / 2.0 - 0.5));" +
+            "    }" +
             "}";
 
     static final int COORDS_PER_VERTEX = 2;

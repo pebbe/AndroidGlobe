@@ -41,22 +41,15 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     private final float[] mProjectionMatrix = new float[16];
     private final float[] mViewMatrix = new float[16];
 
-    private float mAngleH;
-    private float mAngleV;
-    private boolean mAngleSaved;
-
-    private void init() {
-        mAngleH = 0;
-        mAngleV = 0;
-        mAngleSaved = false;
-    }
+    private float mAngleH = 0;
+    private float mAngleV = 0;
+    private boolean mAngleSaved = false;
 
     public void setContext(Context context) {
         mContext = context;
     }
 
     public void restoreInstanceState(Bundle savedInstanceState) {
-        init();
         if (savedInstanceState != null) {
             mAngleH = savedInstanceState.getFloat(angelHState, mAngleH);
             mAngleV = savedInstanceState.getFloat(angelVState, mAngleV);
@@ -73,7 +66,9 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig eglConfig) {
         // Set the background frame color
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        //GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        float c = 0.6f;
+        GLES20.glClearColor(c * 0.27f, c * 0.35f, c * 0.39f, 1.0f);
 
         // enable face culling feature
         GLES20.glEnable(GLES20.GL_CULL_FACE);
@@ -104,8 +99,8 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         globe.Sun(longitude, latitude);
 
         if (!mAngleSaved) {
-            mAngleH = 180.0f * longitude / (float) PI;
-            mAngleV = 180.0f * latitude / (float) PI;
+            mAngleH = (cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET)) / (60 * 1000) / 4;
+            mAngleV = 0;
         }
     }
 
