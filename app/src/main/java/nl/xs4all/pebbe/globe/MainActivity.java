@@ -70,6 +70,12 @@ public class MainActivity extends AppCompatActivity {
             dialog.show(getSupportFragmentManager(), "HelpDiaFrag");
             return true;
         }
+        if (id == R.id.action_credits) {
+            CreditsDialogFragment dialog = new CreditsDialogFragment();
+            dialog.show(getSupportFragmentManager(), "CredDiaFrag");
+            return true;
+        }
+
 
         return super.onOptionsItemSelected(item);
     }

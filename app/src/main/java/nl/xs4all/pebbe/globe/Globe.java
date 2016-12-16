@@ -96,8 +96,8 @@ public class Globe {
             }
         }
 
-        Log.i("MYTAG", "vertexCount: " + vertexCount);
-        Log.i("MYTAG", "ARRAY_SIZE: " + ARRAY_SIZE);
+        //Log.i("MYTAG", "vertexCount: " + vertexCount);
+        //Log.i("MYTAG", "ARRAY_SIZE: " + ARRAY_SIZE);
 
         ByteBuffer bb = ByteBuffer.allocateDirect(ARRAY_SIZE * 4);
         bb.order(ByteOrder.nativeOrder());
