@@ -133,7 +133,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0,
-                mZoom ? mProjectionMatrix : mProjectionMatrixZoom,
+                mZoom ? mProjectionMatrixZoom : mProjectionMatrix,
                 0, mViewMatrix, 0);
 
         globe.draw(mMVPMatrix);
