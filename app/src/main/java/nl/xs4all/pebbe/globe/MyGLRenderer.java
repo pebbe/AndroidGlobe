@@ -31,7 +31,8 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
     private final static String angelHState = "nl.xs4all.pebbe.globe.ANGLEH";
     private final static String angelVState = "nl.xs4all.pebbe.globe.ANGLEV";
-    private final static String angelSState = "nl.xs4all.pebbe.globe.ANGLESAVED";
+    private final static String zoomState = "nl.xs4all.pebbe.globe.ZOOM";
+    private final static String saveState = "nl.xs4all.pebbe.globe.STATESAVED";
 
     private Globe globe;
     private Context mContext;
@@ -39,11 +40,13 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     // mMVPMatrix is an abbreviation for "Model View Projection Matrix"
     private final float[] mMVPMatrix = new float[16];
     private final float[] mProjectionMatrix = new float[16];
+    private final float[] mProjectionMatrixZoom = new float[16];
     private final float[] mViewMatrix = new float[16];
 
     private float mAngleH = 0;
     private float mAngleV = 0;
-    private boolean mAngleSaved = false;
+    private boolean mZoom = false;
+    private boolean mStateSaved = false;
 
     public void setContext(Context context) {
         mContext = context;
@@ -53,14 +56,20 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         if (savedInstanceState != null) {
             mAngleH = savedInstanceState.getFloat(angelHState, mAngleH);
             mAngleV = savedInstanceState.getFloat(angelVState, mAngleV);
-            mAngleSaved = savedInstanceState.getBoolean(angelSState, false);
+            mZoom = savedInstanceState.getBoolean(zoomState, mZoom);
+            mStateSaved = savedInstanceState.getBoolean(saveState, false);
         }
     }
 
     public void saveInstanceState(Bundle outState) {
         outState.putFloat(angelHState, mAngleH);
         outState.putFloat(angelVState, mAngleV);
-        outState.putBoolean(angelSState, true);
+        outState.putBoolean(zoomState, mZoom);
+        outState.putBoolean(saveState, true);
+    }
+
+    public void zoom() {
+        mZoom = !mZoom;
     }
 
     @Override
@@ -98,9 +107,10 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         globe = new Globe(mContext);
         globe.Sun(longitude, latitude);
 
-        if (!mAngleSaved) {
+        if (!mStateSaved) {
             mAngleH = (cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET)) / (60 * 1000) / 4;
             mAngleV = 0;
+            mZoom = false;
         }
     }
 
@@ -122,7 +132,9 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
                 0, 1, 0);
 
         // Calculate the projection and view transformation
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0,
+                mZoom ? mProjectionMatrix : mProjectionMatrixZoom,
+                0, mViewMatrix, 0);
 
         globe.draw(mMVPMatrix);
     }
@@ -143,10 +155,10 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
             ymul = 1.01f / ratio;
         }
 
-
         // this projection matrix is applied to object coordinates
         // in the onDrawFrame() method
         Matrix.frustumM(mProjectionMatrix, 0, -xmul, xmul, -ymul, ymul, 98, 102);
+        Matrix.frustumM(mProjectionMatrixZoom, 0, 0.65f * -xmul, 0.65f * xmul, 0.65f * -ymul, 0.65f * ymul, 98, 102);
     }
 
     public static int loadShader(int type, String shaderCode) {
@@ -187,5 +199,4 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
             throw new RuntimeException(glOperation + ": glError " + error);
         }
     }
-
 }

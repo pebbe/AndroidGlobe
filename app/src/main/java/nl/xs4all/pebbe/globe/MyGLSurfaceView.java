@@ -34,6 +34,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
     private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
     private float mPreviousX;
     private float mPreviousY;
+    private long mPreviousT;
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
@@ -66,6 +67,16 @@ public class MyGLSurfaceView extends GLSurfaceView {
                 }
 
                 requestRender();
+                break;
+
+            case MotionEvent.ACTION_DOWN:
+                // reset na dubbel tap
+                long t = System.currentTimeMillis();
+                if (t - mPreviousT < 200) {
+                    mRenderer.zoom();
+                    requestRender();
+                }
+                mPreviousT = t;
                 break;
 
         }

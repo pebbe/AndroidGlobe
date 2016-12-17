@@ -2,7 +2,7 @@
     <string name="app_name">Globus</string>
     <string name="action_help">Help</string>
     <string name="action_credits">Credits</string>
-    <string name="help">Swipe left/right to rotate[BR][BR]Swipe up/down to tilt</string>
+    <string name="help">Swipe left/right to rotate[BR][BR]Swipe up/down to tilt[BR][BR]Double tap to zoom</string>
     <string name="credits">Uses AstroLib from mhuss.com for calculating the position of the sun</string>
     <string name="OK">OK</string>
 </resources>
