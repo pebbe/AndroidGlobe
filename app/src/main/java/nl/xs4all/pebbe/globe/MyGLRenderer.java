@@ -40,12 +40,11 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     // mMVPMatrix is an abbreviation for "Model View Projection Matrix"
     private final float[] mMVPMatrix = new float[16];
     private final float[] mProjectionMatrix = new float[16];
-    private final float[] mProjectionMatrixZoom = new float[16];
     private final float[] mViewMatrix = new float[16];
 
     private float mAngleH = 0;
     private float mAngleV = 0;
-    private boolean mZoom = false;
+    private float mZoom = 1;
     private boolean mStateSaved = false;
 
     public void setContext(Context context) {
@@ -56,7 +55,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         if (savedInstanceState != null) {
             mAngleH = savedInstanceState.getFloat(angelHState, mAngleH);
             mAngleV = savedInstanceState.getFloat(angelVState, mAngleV);
-            mZoom = savedInstanceState.getBoolean(zoomState, mZoom);
+            mZoom = savedInstanceState.getFloat(zoomState, mZoom);
             mStateSaved = savedInstanceState.getBoolean(saveState, false);
         }
     }
@@ -64,12 +63,16 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     public void saveInstanceState(Bundle outState) {
         outState.putFloat(angelHState, mAngleH);
         outState.putFloat(angelVState, mAngleV);
-        outState.putBoolean(zoomState, mZoom);
+        outState.putFloat(zoomState, mZoom);
         outState.putBoolean(saveState, true);
     }
 
-    public void zoom() {
-        mZoom = !mZoom;
+    public void setZoom(float zoom) {
+        mZoom = zoom;
+    }
+
+    public float getZoom() {
+        return mZoom;
     }
 
     @Override
@@ -110,7 +113,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         if (!mStateSaved) {
             mAngleH = (cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET)) / (60 * 1000) / 4;
             mAngleV = 0;
-            mZoom = false;
+            mZoom = 1;
         }
     }
 
@@ -132,11 +135,9 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
                 0, 1, 0);
 
         // Calculate the projection and view transformation
-        Matrix.multiplyMM(mMVPMatrix, 0,
-                mZoom ? mProjectionMatrixZoom : mProjectionMatrix,
-                0, mViewMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
 
-        globe.draw(mMVPMatrix);
+        globe.draw(mMVPMatrix, mZoom);
     }
 
     @Override
@@ -157,8 +158,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
         // this projection matrix is applied to object coordinates
         // in the onDrawFrame() method
-        Matrix.frustumM(mProjectionMatrix, 0, -xmul, xmul, -ymul, ymul, 98, 102);
-        Matrix.frustumM(mProjectionMatrixZoom, 0, 0.65f * -xmul, 0.65f * xmul, 0.65f * -ymul, 0.65f * ymul, 98, 102);
+        Matrix.frustumM(mProjectionMatrix, 0, -xmul, xmul, -ymul, ymul, 95, 105);
     }
 
     public static int loadShader(int type, String shaderCode) {

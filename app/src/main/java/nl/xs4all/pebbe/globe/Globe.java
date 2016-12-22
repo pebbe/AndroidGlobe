@@ -16,13 +16,13 @@ import static java.lang.Math.PI;
 public class Globe {
 
     private final static int STEP = 5; // gehele deler van 90;
-    private final static int ARRAY_SIZE = 6 * (180 / STEP - 1) * (360 / STEP) * 2 * 2;
-
+    private final static int ARRAY_SIZE = 6 * (180 / STEP - 1) * (360 / STEP) * 2;
 
     private FloatBuffer vertexBuffer;
     private final int mProgram;
     private int mPositionHandle;
     private int mMatrixHandle;
+    private int mZoomHandle;
     private int mSunHandle;
     private float sunX = 0;
     private float sunY = 0;
@@ -31,11 +31,12 @@ public class Globe {
     private final String vertexShaderCode = "" +
             "uniform mat4 uMVPMatrix;" +
             "attribute vec2 position;" +
+            "uniform float zoom;" +
             "varying vec2 pos;" +
             "uniform vec3 sun;" +
             "varying vec3 vsun;" +
             "void main() {" +
-            "    gl_Position = uMVPMatrix * vec4(sin(position[0]) * cos(position[1]), sin(position[1]), cos(position[0]) * cos(position[1]), 1);" +
+            "    gl_Position = uMVPMatrix * vec4(zoom * sin(position[0]) * cos(position[1]), zoom * sin(position[1]), zoom * cos(position[0]) * cos(position[1]), 1);" +
             "    pos = position;" +
             "    vsun = sun;" +
             "}";
@@ -59,13 +60,13 @@ public class Globe {
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
 
     private void driehoek(float long1, float lat1, float long2, float lat2, float long3, float lat3) {
-        Coords[vertexCount] = long1 / 180.0f * (float)PI;
-        Coords[vertexCount + 1] = lat1 / 180.0f * (float)PI;
-        Coords[vertexCount + 2] = long2 / 180.0f * (float)PI;
-        Coords[vertexCount + 3] = lat2 / 180.0f * (float)PI;
-        Coords[vertexCount + 4] = long3 / 180.0f * (float)PI;
-        Coords[vertexCount + 5] = lat3 / 180.0f * (float)PI;
-        vertexCount += 6;
+        Coords[COORDS_PER_VERTEX * vertexCount + 0] = long1 / 180.0f * (float)PI;
+        Coords[COORDS_PER_VERTEX * vertexCount + 1] = lat1 / 180.0f * (float)PI;
+        Coords[COORDS_PER_VERTEX * vertexCount + 2] = long2 / 180.0f * (float)PI;
+        Coords[COORDS_PER_VERTEX * vertexCount + 3] = lat2 / 180.0f * (float)PI;
+        Coords[COORDS_PER_VERTEX * vertexCount + 4] = long3 / 180.0f * (float)PI;
+        Coords[COORDS_PER_VERTEX * vertexCount + 5] = lat3 / 180.0f * (float)PI;
+        vertexCount += 3;
     }
 
     public void Sun(float lon, float lat) {
@@ -141,7 +142,7 @@ public class Globe {
         bmp.recycle();
     }
 
-    public void draw(float[] mvpMatrix) {
+    public void draw(float[] mvpMatrix, float zoom) {
         // Add program to OpenGL environment
         GLES20.glUseProgram(mProgram);
         MyGLRenderer.checkGlError("glUseProgram");
@@ -156,8 +157,15 @@ public class Globe {
                 vertexStride, vertexBuffer);
         MyGLRenderer.checkGlError("glVertexAttribPointer position");
 
+        mZoomHandle = GLES20.glGetUniformLocation(mProgram, "zoom");
+        MyGLRenderer.checkGlError("glGetUniformLocation zoom");
+        GLES20.glUniform1f(mZoomHandle, zoom);
+        MyGLRenderer.checkGlError("glUniform1f zoom");
+
         mSunHandle = GLES20.glGetUniformLocation(mProgram, "sun");
+        MyGLRenderer.checkGlError("glGetUniformLocation sun");
         GLES20.glUniform3f(mSunHandle, sunX, sunY, sunZ);
+        MyGLRenderer.checkGlError("glUniform3f sun");
 
         mMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
         MyGLRenderer.checkGlError("glGetUniformLocation uMVPMatrix");
