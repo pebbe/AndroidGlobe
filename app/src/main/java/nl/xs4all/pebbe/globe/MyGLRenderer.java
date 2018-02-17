@@ -2,7 +2,6 @@ package nl.xs4all.pebbe.globe;
 
 import com.mhuss.AstroLib.DateOps;
 import com.mhuss.AstroLib.Latitude;
-import com.mhuss.AstroLib.LocationElements;
 import com.mhuss.AstroLib.Longitude;
 import com.mhuss.AstroLib.ObsInfo;
 import com.mhuss.AstroLib.PlanetData;
@@ -17,8 +16,8 @@ import android.util.Log;
 
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -32,7 +31,6 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     private final static String angelHState = "nl.xs4all.pebbe.globe.ANGLEH";
     private final static String angelVState = "nl.xs4all.pebbe.globe.ANGLEV";
     private final static String zoomState = "nl.xs4all.pebbe.globe.ZOOM";
-    private final static String saveState = "nl.xs4all.pebbe.globe.STATESAVED";
 
     private Globe globe;
     private Context mContext;
@@ -45,18 +43,24 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     private float mAngleH = 0;
     private float mAngleV = 0;
     private float mZoom = 1;
-    private boolean mStateSaved = false;
+
+    private void init() {
+        Calendar cal = new GregorianCalendar();
+        mAngleH = (cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET)) / (60 * 1000) / 4;
+        mAngleV = 0;
+        mZoom = 1;
+    }
 
     public void setContext(Context context) {
         mContext = context;
     }
 
     public void restoreInstanceState(Bundle savedInstanceState) {
+        init();
         if (savedInstanceState != null) {
             mAngleH = savedInstanceState.getFloat(angelHState, mAngleH);
             mAngleV = savedInstanceState.getFloat(angelVState, mAngleV);
             mZoom = savedInstanceState.getFloat(zoomState, mZoom);
-            mStateSaved = savedInstanceState.getBoolean(saveState, false);
         }
     }
 
@@ -64,7 +68,6 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         outState.putFloat(angelHState, mAngleH);
         outState.putFloat(angelVState, mAngleV);
         outState.putFloat(zoomState, mZoom);
-        outState.putBoolean(saveState, true);
     }
 
     public void setZoom(float zoom) {
@@ -93,14 +96,11 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         float longitude = 0;
         float latitude = 0;
 
-        Calendar cal = new GregorianCalendar();
-        Date trialTime = new Date();
-        cal.setTime(trialTime);
+        Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
 
         ObsInfo oi = new ObsInfo(new Latitude(0), new Longitude(0), 0);
         double jd = DateOps.calendarToDoubleDay(cal);
         PlanetData pd = new PlanetData(Planets.SUN, jd, oi);
-        LocationElements le;
         try {
             longitude = (float) -pd.hourAngle();
             latitude = (float) pd.getDeclination();
@@ -109,12 +109,6 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         }
         globe = new Globe(mContext);
         globe.Sun(longitude, latitude);
-
-        if (!mStateSaved) {
-            mAngleH = (cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET)) / (60 * 1000) / 4;
-            mAngleV = 0;
-            mZoom = 1;
-        }
     }
 
     @Override
